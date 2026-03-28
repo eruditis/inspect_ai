@@ -98,6 +98,8 @@ class SandboxEnvironment(abc.ABC):
 
     def __init__(self) -> None:
         self._inject_lock = anyio.Lock()
+        self._tools_injected: bool = False
+        self._tools_user: str | None = None
 
     @abc.abstractmethod
     async def exec(
@@ -160,6 +162,7 @@ class SandboxEnvironment(abc.ABC):
           contents: Text or binary file contents.
 
         Raises:
+          TimeoutError: If the operation times out.
           PermissionError: If the current user does not have permission to
             write to the specified path.
           IsADirectoryError: If the file exists already and
@@ -192,6 +195,7 @@ class SandboxEnvironment(abc.ABC):
           Contents of file (as str or bytes for binary files)
 
         Raises:
+          TimeoutError: If the operation times out.
           FileNotFoundError: If the file does not exist.
           UnicodeDecodeError: If an encoding error occurs
             while reading the file.
@@ -308,7 +312,7 @@ class SandboxEnvironment(abc.ABC):
         )
 
         # inject tools (use flag for fast path)
-        if not getattr(self, "_tools_injected", False):
+        if not self._tools_injected:
             await sandbox_with_injected_tools(sandbox=self)
             self._tools_injected = True
 

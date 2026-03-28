@@ -24,7 +24,7 @@ from inspect_ai._util.file import (
 from inspect_ai._util.json import to_json_safe
 from inspect_ai.log._condense import resolve_sample_attachments
 from inspect_ai.log._log import EvalSampleSummary
-from inspect_ai.log._pool import resolve_sample_message_pool
+from inspect_ai.log._pool import resolve_sample_events_data
 
 from ._log import EvalLog, EvalMetric, EvalSample, EvalStatus
 from ._recorders import (
@@ -340,7 +340,7 @@ async def read_eval_log_async(
 
     # always resolve message pool refs so ModelEvent.input is populated
     if log.samples:
-        log.samples = [resolve_sample_message_pool(sample) for sample in log.samples]
+        log.samples = [resolve_sample_events_data(sample) for sample in log.samples]
         if resolve_attachments:
             log.samples = [
                 resolve_sample_attachments(sample, resolve_attachments)
@@ -514,18 +514,18 @@ async def read_eval_log_sample_async(
         recorder_type = recorder_type_for_format(format)
     if exclude_fields:
         if "events" not in exclude_fields:
-            # pools are needed to resolve refs in events
-            exclude_fields = exclude_fields - {"message_pool", "call_pool"}
+            # events_data is needed to resolve refs in events
+            exclude_fields = exclude_fields - {"events_data"}
         else:
-            # no events means pools are useless
-            exclude_fields = exclude_fields | {"message_pool", "call_pool"}
+            # no events means events_data is useless
+            exclude_fields = exclude_fields | {"events_data"}
 
     sample = await recorder_type.read_log_sample(
         log_file, id, epoch, uuid, exclude_fields, reader
     )
 
     # always resolve message pool refs so ModelEvent.input is populated
-    sample = resolve_sample_message_pool(sample)
+    sample = resolve_sample_events_data(sample)
     if resolve_attachments:
         sample = resolve_sample_attachments(sample, resolve_attachments)
 
@@ -690,6 +690,7 @@ def log_files_from_ls(
 
 
 log_file_pattern = r"^\d{4}-\d{2}-\d{2}T\d{2}[:-]\d{2}[:-]\d{2}.*$"
+_timestamp_prefix_re = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}")
 
 
 def is_log_file(file: str, extensions: list[str]) -> bool:
@@ -715,8 +716,7 @@ def _try_parse_filename(
     if len(parts) < 2:
         return None, None, None
 
-    # Validate that parts[0] looks like an ISO timestamp prefix
-    if not re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}", parts[0]):
+    if not _timestamp_prefix_re.match(parts[0]):
         return None, None, None
 
     if len(parts) == 2:
@@ -756,7 +756,6 @@ def _try_read_header(
 
 
 def log_file_info(info: FileInfo) -> "EvalLogInfo":
-    # extract the basename and split into parts
     basename = os.path.splitext(info.name)[0]
     parts = basename.split("/").pop().split("_")
 
@@ -793,6 +792,7 @@ def eval_log_json_str(log: EvalLog) -> str:
 def write_log_listing(
     log_dir: str,
     *,
+    logs: list[EvalLogInfo] | None = None,
     filename: str = "listing.json",
     output_dir: str | None = None,
     fs_options: dict[str, Any] = {},
@@ -803,6 +803,7 @@ def write_log_listing(
 
     Args:
       log_dir (str): Log directory to write overview for.
+      logs (list[EvalLogInfo] | None): Pre-fetched log list (defaults to listing log_dir).
       filename (str): Manifest filename (defaults to "overview.json")
       output_dir (str | None): Output directory for manifest (defaults to log_dir)
       fs_options (dict[str,Any]): Optional. Additional arguments to pass through
@@ -813,7 +814,8 @@ def write_log_listing(
     log_dir = fs.info(log_dir).name
 
     # list eval logs
-    logs = list_eval_logs(log_dir)
+    if logs is None:
+        logs = list_eval_logs(log_dir)
 
     # resolve to overview (make filenames relative to the log dir)
     names = [manifest_eval_log_name(log, log_dir, fs.sep) for log in logs]
