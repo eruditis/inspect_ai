@@ -27172,7 +27172,7 @@ const {
   remove: remove$1,
   DexieYProvider
 } = Dexie;
-const DB_VERSION = 9;
+const DB_VERSION = 10;
 function resolveDBName(databaseHandle) {
   const sanitizedDir = databaseHandle.replace(/[^a-zA-Z0-9_-]/g, "_");
   const dbName = `InspectAI_${sanitizedDir}`;
@@ -44857,7 +44857,9 @@ const fetchSize = async (url) => {
   if (contentLength !== null) {
     return Number(contentLength);
   }
-  throw new Error(`Could not determine content length for ${url}`);
+  const fullResponse = await fetch(url);
+  const buffer2 = await fullResponse.arrayBuffer();
+  return buffer2.byteLength;
 };
 const parseZipFileEntry = async (file, rawData) => {
   const view = new DataView(rawData.buffer);
@@ -45589,6 +45591,15 @@ const fetchJsonFile = async (file, handleError2) => {
 function joinURI(...segments2) {
   return segments2.map((segment2) => segment2.replace(/(^\/+|\/+$)/g, "")).join("/");
 }
+function logHandleFromManifestEntry(name2, entry) {
+  const timestamp2 = entry.completed_at || entry.started_at;
+  return {
+    name: name2,
+    task: entry.task,
+    task_id: entry.task_id,
+    mtime: timestamp2 ? new Date(timestamp2).getTime() : void 0
+  };
+}
 function staticHttpApi(log_dir, log_file, abs_log_dir) {
   const resolved_log_dir = log_dir?.replace(" ", "+");
   log_file ? log_file.replace(" ", "+") : void 0;
@@ -45624,13 +45635,9 @@ function staticHttpApiForLog(logInfo) {
       if (log_dir) {
         const manifest2 = await getManifest();
         if (manifest2) {
-          const logs = Object.keys(manifest2).map((key2) => {
-            return {
-              name: joinURI(log_dir, key2),
-              task: manifest2[key2].task,
-              task_id: manifest2[key2].task_id
-            };
-          });
+          const logs = Object.keys(manifest2).map(
+            (key2) => logHandleFromManifestEntry(joinURI(log_dir, key2), manifest2[key2])
+          );
           return Promise.resolve({
             logs,
             log_dir,
