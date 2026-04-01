@@ -27172,7 +27172,7 @@ const {
   remove: remove$1,
   DexieYProvider
 } = Dexie;
-const DB_VERSION = 9;
+const DB_VERSION = 10;
 function resolveDBName(databaseHandle) {
   const sanitizedDir = databaseHandle.replace(/[^a-zA-Z0-9_-]/g, "_");
   const dbName = `InspectAI_${sanitizedDir}`;
@@ -44857,7 +44857,9 @@ const fetchSize = async (url) => {
   if (contentLength !== null) {
     return Number(contentLength);
   }
-  throw new Error(`Could not determine content length for ${url}`);
+  const fullResponse = await fetch(url);
+  const buffer2 = await fullResponse.arrayBuffer();
+  return buffer2.byteLength;
 };
 const parseZipFileEntry = async (file, rawData) => {
   const view = new DataView(rawData.buffer);
@@ -53933,14 +53935,14 @@ const ViewerOptionsPopover = ({
     }
   );
 };
-const header$2 = "_header_1u3sd_1";
-const bordered = "_bordered_1u3sd_11";
-const breadcrumbs = "_breadcrumbs_1u3sd_15";
-const ellipsis = "_ellipsis_1u3sd_26";
-const left$1 = "_left_1u3sd_31";
-const right$1 = "_right_1u3sd_41";
-const toolbarButton = "_toolbarButton_1u3sd_50";
-const pathContainer = "_pathContainer_1u3sd_58";
+const header$2 = "_header_1auh9_1";
+const bordered = "_bordered_1auh9_11";
+const breadcrumbs = "_breadcrumbs_1auh9_15";
+const ellipsis = "_ellipsis_1auh9_26";
+const left$1 = "_left_1auh9_31";
+const right$1 = "_right_1auh9_41";
+const toolbarButton = "_toolbarButton_1auh9_50";
+const pathContainer = "_pathContainer_1auh9_58";
 const styles$1d = {
   header: header$2,
   bordered,
@@ -116560,18 +116562,18 @@ const EventNavs = ({
     }
   );
 };
-const stickyWrapper = "_stickyWrapper_1yfru_1";
-const label$5 = "_label_1yfru_22";
-const navs = "_navs_1yfru_27";
-const turnLabel = "_turnLabel_1yfru_33";
-const card = "_card_1yfru_39";
-const cardContent = "_cardContent_1yfru_47";
-const hidden = "_hidden_1yfru_52";
-const copyLink = "_copyLink_1yfru_60";
-const hover = "_hover_1yfru_68";
-const root$1 = "_root_1yfru_72";
-const bottomDongle = "_bottomDongle_1yfru_77";
-const dongleIcon = "_dongleIcon_1yfru_94";
+const stickyWrapper = "_stickyWrapper_1ky6i_1";
+const label$5 = "_label_1ky6i_22";
+const navs = "_navs_1ky6i_27";
+const turnLabel = "_turnLabel_1ky6i_33";
+const card = "_card_1ky6i_39";
+const cardContent = "_cardContent_1ky6i_47";
+const hidden = "_hidden_1ky6i_52";
+const copyLink = "_copyLink_1ky6i_60";
+const hover = "_hover_1ky6i_68";
+const root$1 = "_root_1ky6i_72";
+const bottomDongle = "_bottomDongle_1ky6i_77";
+const dongleIcon = "_dongleIcon_1ky6i_94";
 const styles$M = {
   stickyWrapper,
   label: label$5,
@@ -117074,16 +117076,16 @@ const EventTimingPanel = ({
     }
   }) });
 };
-const container$d = "_container_1gr6b_1";
-const all = "_all_1gr6b_6";
-const tableSelection = "_tableSelection_1gr6b_12";
-const codePre = "_codePre_1gr6b_22";
-const code$3 = "_code_1gr6b_22";
-const progress$1 = "_progress_1gr6b_34";
-const error$1 = "_error_1gr6b_38";
-const toolConfig = "_toolConfig_1gr6b_54";
-const toolChoice = "_toolChoice_1gr6b_62";
-const traceback = "_traceback_1gr6b_71";
+const container$d = "_container_jzx1t_1";
+const all = "_all_jzx1t_6";
+const tableSelection = "_tableSelection_jzx1t_12";
+const codePre = "_codePre_jzx1t_22";
+const code$3 = "_code_jzx1t_22";
+const progress$1 = "_progress_jzx1t_34";
+const error$1 = "_error_jzx1t_38";
+const toolConfig = "_toolConfig_jzx1t_54";
+const toolChoice = "_toolChoice_jzx1t_62";
+const traceback = "_traceback_jzx1t_71";
 const styles$H = {
   container: container$d,
   all,
@@ -117284,11 +117286,11 @@ const ToolChoiceView = ({ toolChoice: toolChoice2 }) => {
     ] });
   }
 };
-const noMargin = "_noMargin_1a3fk_1";
-const code$2 = "_code_1a3fk_5";
-const sample = "_sample_1a3fk_10";
-const section$1 = "_section_1a3fk_14";
-const metadata$1 = "_metadata_1a3fk_21";
+const noMargin = "_noMargin_9u53n_1";
+const code$2 = "_code_9u53n_5";
+const sample = "_sample_9u53n_10";
+const section$1 = "_section_9u53n_14";
+const metadata$1 = "_metadata_9u53n_21";
 const styles$G = {
   noMargin,
   code: code$2,
@@ -128744,11 +128746,11 @@ const useLogNavigation = () => {
     selectTab
   };
 };
-const workspace = "_workspace_1r3mu_1";
-const tabContainer = "_tabContainer_1r3mu_6";
-const tabSet = "_tabSet_1r3mu_14";
-const tabs = "_tabs_1r3mu_21";
-const tabPanels = "_tabPanels_1r3mu_29";
+const workspace = "_workspace_1avoq_1";
+const tabContainer = "_tabContainer_1avoq_6";
+const tabSet = "_tabSet_1avoq_14";
+const tabs = "_tabs_1avoq_22";
+const tabPanels = "_tabPanels_1avoq_30";
 const styles$v = {
   workspace,
   tabContainer,
@@ -150936,7 +150938,7 @@ const editorTheme = EditorView.theme({
     boxShadow: "var(--inspect-focus-border-gray-shadow)"
   },
   ".cm-tooltip": {
-    backgroundColor: "var(--bs-light)",
+    backgroundColor: "var(--bs-secondary-bg)",
     border: "1px solid var(--bs-border-color)",
     color: "var(--bs-body-color)"
   },
